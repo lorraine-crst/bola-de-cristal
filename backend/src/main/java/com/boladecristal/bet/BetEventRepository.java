@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BetEventRepository extends JpaRepository<BetEvent, Long> {
 
-    List<BetEvent> findByBetIdOrderByCreatedAtAsc(Long betId);
+    List<BetEvent> findByBetIdOrderByCreatedAtAscIdAsc(Long betId);
 }

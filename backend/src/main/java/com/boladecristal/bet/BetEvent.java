@@ -54,7 +54,7 @@ public class BetEvent {
     protected BetEvent() {
     }
 
-    public BetEvent(Bet bet, User actor, BetAction action, String comment,
+    private BetEvent(Bet bet, User actor, BetAction action, String comment,
             String previousDescription, Integer previousProbableYear) {
         this.bet = bet;
         this.actor = actor;
@@ -63,6 +63,22 @@ public class BetEvent {
         this.previousDescription = previousDescription;
         this.previousProbableYear = previousProbableYear;
         this.createdAt = LocalDateTime.now();
+    }
+
+    public static BetEvent created(Bet bet, User actor) {
+        return new BetEvent(bet, actor, BetAction.CREATED, null, null, null);
+    }
+
+    public static BetEvent edited(Bet bet, User actor, String previousDescription, Integer previousProbableYear) {
+        return new BetEvent(bet, actor, BetAction.EDITED, null, previousDescription, previousProbableYear);
+    }
+
+    public static BetEvent accepted(Bet bet, User actor) {
+        return new BetEvent(bet, actor, BetAction.ACCEPTED, bet.getResolutionComment(), null, null);
+    }
+
+    public static BetEvent denied(Bet bet, User actor) {
+        return new BetEvent(bet, actor, BetAction.DENIED, bet.getResolutionComment(), null, null);
     }
 
     public Long getId() {
