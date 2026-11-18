@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: bola-de-cristal
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/boladecristal}
+    username: ${DB_USER:boladecristal}
+    password: ${DB_PASSWORD:boladecristal}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+server:
+  port: ${PORT:8081}
