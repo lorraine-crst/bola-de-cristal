@@ -1,3 +1,4 @@
+import { ptBR } from '@mui/material/locale'
 import { createTheme } from '@mui/material/styles'
 
 import type { BetStatus } from './types'
@@ -32,4 +33,4 @@ export const theme = createTheme({
       defaultProps: { disableElevation: true },
     },
   },
-})
+}, ptBR)
