@@ -4,5 +4,7 @@ public enum BetAction {
     CREATED,
     EDITED,
     ACCEPTED,
-    DENIED
+    DENIED,
+    SIDE_FILLED,
+    FINISHED
 }

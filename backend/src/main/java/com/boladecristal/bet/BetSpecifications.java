@@ -13,6 +13,9 @@ final class BetSpecifications {
 
     static Specification<Bet> matching(BetFilter filter, Long creatorId) {
         Specification<Bet> spec = Specification.unrestricted();
+        if (filter.type() != null) {
+            spec = spec.and(hasType(filter.type()));
+        }
         if (filter.status() != null) {
             spec = spec.and(hasStatus(filter.status()));
         }
@@ -34,6 +37,10 @@ final class BetSpecifications {
         return spec;
     }
 
+    private static Specification<Bet> hasType(BetType type) {
+        return (root, query, cb) -> cb.equal(root.get("type"), type);
+    }
+
     private static Specification<Bet> hasStatus(BetStatus status) {
         return (root, query, cb) -> cb.equal(root.get("status"), status);
     }
@@ -51,7 +58,10 @@ final class BetSpecifications {
                 .replace("!", "!!")
                 .replace("%", "!%")
                 .replace("_", "!_");
-        return (root, query, cb) -> cb.like(root.get("description"), "%" + escaped + "%", LIKE_ESCAPE);
+        String pattern = "%" + escaped + "%";
+        return (root, query, cb) -> cb.or(
+                cb.like(root.get("title"), pattern, LIKE_ESCAPE),
+                cb.like(root.get("description"), pattern, LIKE_ESCAPE));
     }
 
     private static Specification<Bet> createdOnOrAfter(LocalDate date) {

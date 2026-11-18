@@ -30,6 +30,7 @@ public class BetController {
 
     @GetMapping
     public PageResponse<BetResponse> search(
+            @RequestParam(required = false) BetType type,
             @RequestParam(required = false) BetStatus status,
             @RequestParam(required = false) Long creatorId,
             @RequestParam(required = false) Integer probableYear,
@@ -39,7 +40,7 @@ public class BetController {
             @RequestParam(defaultValue = "false") boolean mine,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        BetFilter filter = new BetFilter(status, creatorId, probableYear, q, createdFrom, createdTo, mine);
+        BetFilter filter = new BetFilter(type, status, creatorId, probableYear, q, createdFrom, createdTo, mine);
         return betService.search(filter, page, size);
     }
 
@@ -67,5 +68,21 @@ public class BetController {
     @PostMapping("/{id}/deny")
     public BetDetailResponse deny(@PathVariable Long id, @Valid @RequestBody DenyBetRequest request) {
         return betService.deny(id, request);
+    }
+
+    @PostMapping("/{id}/sides")
+    public BetDetailResponse fillSide(@PathVariable Long id, @Valid @RequestBody SideRequest request) {
+        return betService.fillSide(id, request);
+    }
+
+    @PostMapping("/{id}/finish")
+    public BetDetailResponse finish(@PathVariable Long id, @Valid @RequestBody FinishBetRequest request) {
+        return betService.finish(id, request);
+    }
+
+    @PostMapping("/{id}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public BetCommentResponse comment(@PathVariable Long id, @Valid @RequestBody CommentRequest request) {
+        return betService.comment(id, request);
     }
 }

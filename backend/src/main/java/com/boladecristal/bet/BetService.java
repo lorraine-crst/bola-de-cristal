@@ -21,18 +21,24 @@ public class BetService {
 
     private final BetRepository betRepository;
     private final BetEventRepository betEventRepository;
+    private final BetCommentRepository betCommentRepository;
     private final CurrentUser currentUser;
 
-    public BetService(BetRepository betRepository, BetEventRepository betEventRepository, CurrentUser currentUser) {
+    public BetService(BetRepository betRepository, BetEventRepository betEventRepository,
+            BetCommentRepository betCommentRepository, CurrentUser currentUser) {
         this.betRepository = betRepository;
         this.betEventRepository = betEventRepository;
+        this.betCommentRepository = betCommentRepository;
         this.currentUser = currentUser;
     }
 
     @Transactional
     public BetDetailResponse create(BetRequest request) {
         User user = currentUser.get();
-        Bet bet = betRepository.save(new Bet(user, request.description(), request.probableYear()));
+        Bet bet = request.type() == BetType.SHARED
+                ? Bet.shared(user, request.title(), request.description(), request.prediction())
+                : Bet.single(user, request.title(), request.description(), request.probableYear());
+        betRepository.save(bet);
         betEventRepository.save(BetEvent.created(bet, user));
         return toDetail(bet, user);
     }
@@ -63,10 +69,12 @@ public class BetService {
     public BetDetailResponse update(Long id, BetRequest request) {
         User user = currentUser.get();
         Bet bet = findBet(id);
+        String previousTitle = bet.getTitle();
         String previousDescription = bet.getDescription();
         Integer previousProbableYear = bet.getProbableYear();
-        if (bet.edit(user, request.description(), request.probableYear())) {
-            betEventRepository.save(BetEvent.edited(bet, user, previousDescription, previousProbableYear));
+        if (bet.edit(user, request.title(), request.description(), request.probableYear())) {
+            betEventRepository.save(
+                    BetEvent.edited(bet, user, previousTitle, previousDescription, previousProbableYear));
         }
         return toDetail(bet, user);
     }
@@ -89,6 +97,32 @@ public class BetService {
         return toDetail(bet, user);
     }
 
+    @Transactional
+    public BetDetailResponse fillSide(Long id, SideRequest request) {
+        User user = currentUser.get();
+        Bet bet = findBet(id);
+        BetSide side = bet.fillSide(user, request.prediction());
+        betEventRepository.save(BetEvent.sideFilled(bet, user, side.getPrediction()));
+        return toDetail(bet, user);
+    }
+
+    @Transactional
+    public BetDetailResponse finish(Long id, FinishBetRequest request) {
+        User user = currentUser.get();
+        Bet bet = findBet(id);
+        bet.finish(user, request.correctUserIds(), request.comment());
+        betEventRepository.save(BetEvent.finished(bet, user));
+        return toDetail(bet, user);
+    }
+
+    @Transactional
+    public BetCommentResponse comment(Long id, CommentRequest request) {
+        User user = currentUser.get();
+        Bet bet = findBet(id);
+        BetComment comment = betCommentRepository.save(new BetComment(bet, user, request.body()));
+        return BetCommentResponse.from(comment);
+    }
+
     private Bet findBet(Long id) {
         return betRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Aposta não encontrada."));
@@ -99,6 +133,10 @@ public class BetService {
                 .stream()
                 .map(BetEventResponse::from)
                 .toList();
-        return new BetDetailResponse(BetResponse.from(bet, viewer), history);
+        List<BetCommentResponse> comments = betCommentRepository.findByBetIdOrderByCreatedAtAscIdAsc(bet.getId())
+                .stream()
+                .map(BetCommentResponse::from)
+                .toList();
+        return new BetDetailResponse(BetResponse.from(bet, viewer), history, comments);
     }
 }

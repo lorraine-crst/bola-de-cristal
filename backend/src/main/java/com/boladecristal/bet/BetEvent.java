@@ -43,6 +43,9 @@ public class BetEvent {
     @Column(length = 2000)
     private String comment;
 
+    @Column(length = 120)
+    private String previousTitle;
+
     @Column(length = 2000)
     private String previousDescription;
 
@@ -54,31 +57,41 @@ public class BetEvent {
     protected BetEvent() {
     }
 
-    private BetEvent(Bet bet, User actor, BetAction action, String comment,
-            String previousDescription, Integer previousProbableYear) {
+    private BetEvent(Bet bet, User actor, BetAction action, String comment) {
         this.bet = bet;
         this.actor = actor;
         this.action = action;
         this.comment = comment;
-        this.previousDescription = previousDescription;
-        this.previousProbableYear = previousProbableYear;
         this.createdAt = LocalDateTime.now();
     }
 
     public static BetEvent created(Bet bet, User actor) {
-        return new BetEvent(bet, actor, BetAction.CREATED, null, null, null);
+        return new BetEvent(bet, actor, BetAction.CREATED, null);
     }
 
-    public static BetEvent edited(Bet bet, User actor, String previousDescription, Integer previousProbableYear) {
-        return new BetEvent(bet, actor, BetAction.EDITED, null, previousDescription, previousProbableYear);
+    public static BetEvent edited(Bet bet, User actor, String previousTitle, String previousDescription,
+            Integer previousProbableYear) {
+        BetEvent event = new BetEvent(bet, actor, BetAction.EDITED, null);
+        event.previousTitle = previousTitle;
+        event.previousDescription = previousDescription;
+        event.previousProbableYear = previousProbableYear;
+        return event;
     }
 
     public static BetEvent accepted(Bet bet, User actor) {
-        return new BetEvent(bet, actor, BetAction.ACCEPTED, bet.getResolutionComment(), null, null);
+        return new BetEvent(bet, actor, BetAction.ACCEPTED, bet.getResolutionComment());
     }
 
     public static BetEvent denied(Bet bet, User actor) {
-        return new BetEvent(bet, actor, BetAction.DENIED, bet.getResolutionComment(), null, null);
+        return new BetEvent(bet, actor, BetAction.DENIED, bet.getResolutionComment());
+    }
+
+    public static BetEvent sideFilled(Bet bet, User actor, String prediction) {
+        return new BetEvent(bet, actor, BetAction.SIDE_FILLED, prediction);
+    }
+
+    public static BetEvent finished(Bet bet, User actor) {
+        return new BetEvent(bet, actor, BetAction.FINISHED, bet.getResolutionComment());
     }
 
     public Long getId() {
@@ -99,6 +112,10 @@ public class BetEvent {
 
     public String getComment() {
         return comment;
+    }
+
+    public String getPreviousTitle() {
+        return previousTitle;
     }
 
     public String getPreviousDescription() {

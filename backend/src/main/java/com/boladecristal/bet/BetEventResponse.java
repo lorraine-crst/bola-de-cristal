@@ -9,6 +9,7 @@ public record BetEventResponse(
         UserResponse actor,
         BetAction action,
         String comment,
+        String previousTitle,
         String previousDescription,
         Integer previousProbableYear,
         LocalDateTime createdAt) {
@@ -19,6 +20,7 @@ public record BetEventResponse(
                 UserResponse.from(event.getActor()),
                 event.getAction(),
                 event.getComment(),
+                event.getPreviousTitle(),
                 event.getPreviousDescription(),
                 event.getPreviousProbableYear(),
                 event.getCreatedAt());

@@ -3,6 +3,7 @@ package com.boladecristal.bet;
 import java.time.LocalDate;
 
 public record BetFilter(
+        BetType type,
         BetStatus status,
         Long creatorId,
         Integer probableYear,
